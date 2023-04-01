@@ -1,0 +1,92 @@
+import pygame
+import random
+
+# initialize Pygame
+pygame.init()
+
+# set up the game window
+window_width = 800
+window_height = 600
+window = pygame.display.set_mode((window_width, window_height))
+pygame.display.set_caption("Pong")
+
+# define the colors
+white = (255, 255, 255)
+black = (0, 0, 0)
+blue = (0, 0, 255)
+red = (255, 0, 0)
+green = (0, 255, 0)
+yellow = (255, 255, 0)
+
+# set up the paddles
+paddle_width = 15
+paddle_height = 100
+paddle_speed = 10
+
+left_paddle = pygame.Rect(50, (window_height - paddle_height) / 2, paddle_width, paddle_height)
+right_paddle = pygame.Rect(window_width - 50 - paddle_width, (window_height - paddle_height) / 2, paddle_width, paddle_height)
+
+# set up the ball
+ball_size = 10
+ball_speed = [7, 7]
+
+ball = pygame.Rect((window_width - ball_size) / 2, (window_height - ball_size) / 2, ball_size, ball_size)
+
+# set up the obstacles
+obstacle_width = 20
+obstacle_height = 100
+obstacle_speed = 5
+
+obstacles = []
+for i in range(4):
+    x = random.randint(window_width // 3, 2 * window_width // 3)
+    y = random.randint(obstacle_height, window_height - obstacle_height)
+    obstacle = pygame.Rect(x, y, obstacle_width, obstacle_height)
+    obstacles.append(obstacle)
+
+# set up the sound effects
+bounce_sound = pygame.mixer.Sound('bounce.wav')
+score_sound = pygame.mixer.Sound('score.wav')
+
+# set up the game loop
+game_running = True
+
+while game_running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            game_running = False
+
+    # move the paddles
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_w] and left_paddle.top > 0:
+        left_paddle.move_ip(0, -paddle_speed)
+    if keys[pygame.K_s] and left_paddle.bottom < window_height:
+        left_paddle.move_ip(0, paddle_speed)
+    if keys[pygame.K_UP] and right_paddle.top > 0:
+        right_paddle.move_ip(0, -paddle_speed)
+    if keys[pygame.K_DOWN] and right_paddle.bottom < window_height:
+        right_paddle.move_ip(0, paddle_speed)
+
+    # move the ball
+    ball.move_ip(ball_speed)
+
+    # bounce the ball off the top and bottom walls
+    if ball.top < 0 or ball.bottom > window_height:
+        ball_speed[1] = -ball_speed[1]
+        bounce_sound.play()
+
+    # bounce the ball off the paddles
+    if ball.colliderect(left_paddle) or ball.colliderect(right_paddle):
+        ball_speed[0] = -ball_speed[0]
+        bounce_sound.play()
+
+    # check if the ball goes out of bounds
+    if ball.left < 0:
+        ball_speed = [7, 7]
+        ball.center = (window_width / 2, window_height / 2)
+        score_sound.play()
+
+    if ball.right > window_width:
+        ball_speed = [-7, -7]
+        ball.center = (window_width / 2, window_height / 2)
+       
